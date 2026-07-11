@@ -747,6 +747,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const menuDocRef = db.collection('taqueria').doc('menu');
+const appearanceDocRef = db.collection('taqueria').doc('appearance');
 </script>
 <script>
 const DEFAULT_MENU = [
@@ -771,8 +772,8 @@ let menu = DEFAULT_MENU;
 let numbers = load('numbers', DEFAULT_NUMBERS);
 let pin = load('pin', DEFAULT_PIN);
 let history = load('history', []);
-let logo = load('logo', null);
-let headerColor = load('headerColor', '#1c1a17');
+let logo = null;
+let headerColor = '#1c1a17';
 let pendingLogo = logo;
 let order = {};
 let activeCat = null;
@@ -801,6 +802,26 @@ function initMenuSync(){
 
 function saveMenuToCloud(){
   menuDocRef.set({items: menu});
+}
+
+function initAppearanceSync(){
+  appearanceDocRef.onSnapshot(function(doc){
+    if(doc.exists){
+      const data = doc.data();
+      logo = data.logo || null;
+      headerColor = data.headerColor || '#1c1a17';
+    } else {
+      appearanceDocRef.set({logo: null, headerColor: '#1c1a17'});
+    }
+    applyAppearance();
+    if(document.getElementById('adminPanel').style.display === 'block'){
+      document.getElementById('headerColorInput').value = headerColor;
+      pendingLogo = logo;
+      refreshLogoPreview();
+    }
+  }, function(err){
+    showToast('No se pudo conectar a la apariencia compartida');
+  });
 }
 
 function load(key, fallback){
@@ -1186,10 +1207,9 @@ function removeLogo(){
 function saveAppearance(){
   logo = pendingLogo;
   headerColor = document.getElementById('headerColorInput').value;
-  save('logo', logo);
-  save('headerColor', headerColor);
+  appearanceDocRef.set({logo: logo, headerColor: headerColor});
   applyAppearance();
-  showToast('Apariencia guardada');
+  showToast('Apariencia guardada, sincronizando…');
 }
 function applyAppearance(){
   document.getElementById('headerTop').style.background = headerColor;
@@ -1217,6 +1237,7 @@ function showToast(text){
 setTipo('mesa');
 applyAppearance();
 initMenuSync();
+initAppearanceSync();
 renderCats();
 renderMenu();
 renderOrder();
