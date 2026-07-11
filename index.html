@@ -685,6 +685,7 @@
       </div>
 
       <div class="pane active" id="paneMenu">
+        <p class="hint" style="margin-top:0;">Los cambios aquí se ven en todos los celulares al instante — no solo en el tuyo.</p>
         <label>Nuevo platillo</label>
         <div class="row3">
           <input type="text" id="newItemName" placeholder="Nombre">
@@ -732,6 +733,21 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBFZs5eWNI43Xd1jbaa99L1OEE3ifQPj5o",
+  authDomain: "la-legion-del-rico.firebaseapp.com",
+  projectId: "la-legion-del-rico",
+  storageBucket: "la-legion-del-rico.firebasestorage.app",
+  messagingSenderId: "123677847894",
+  appId: "1:123677847894:web:18a15d47b3c8bf0221a6f7"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const menuDocRef = db.collection('taqueria').doc('menu');
+</script>
 <script>
 const DEFAULT_MENU = [
   {id:'t1',cat:'Tacos',name:'Taco de Pastor',price:18},
@@ -751,7 +767,7 @@ const DEFAULT_MENU = [
 const DEFAULT_NUMBERS = {cocina:'524444923338', dueno:''};
 const DEFAULT_PIN = '1234';
 
-let menu = load('menu', DEFAULT_MENU);
+let menu = DEFAULT_MENU;
 let numbers = load('numbers', DEFAULT_NUMBERS);
 let pin = load('pin', DEFAULT_PIN);
 let history = load('history', []);
@@ -761,6 +777,31 @@ let pendingLogo = logo;
 let order = {};
 let activeCat = null;
 let tipoPedido = 'mesa';
+
+function initMenuSync(){
+  menuDocRef.onSnapshot(function(doc){
+    if(doc.exists && doc.data().items){
+      menu = doc.data().items;
+    } else {
+      menu = DEFAULT_MENU;
+      menuDocRef.set({items: DEFAULT_MENU});
+    }
+    renderCats();
+    renderMenu();
+    renderOrder();
+    if(document.getElementById('adminPanel').style.display === 'block'){
+      const catSelect = document.getElementById('newItemCat');
+      catSelect.innerHTML = categories().map(c=>`<option value="${c}">${c}</option>`).join('');
+      renderItemsList();
+    }
+  }, function(err){
+    showToast('No se pudo conectar al menú compartido');
+  });
+}
+
+function saveMenuToCloud(){
+  menuDocRef.set({items: menu});
+}
 
 function load(key, fallback){
   try{
@@ -1075,18 +1116,18 @@ function addItem(){
   }
   const id = 'i' + Date.now();
   menu.push({id, cat, name, price});
-  save('menu', menu);
+  saveMenuToCloud();
   document.getElementById('newItemName').value = '';
   document.getElementById('newItemPrice').value = '';
   document.getElementById('newCatName').value = '';
   populateAdmin();
   renderCats();
   renderMenu();
-  showToast('Platillo agregado');
+  showToast('Platillo agregado, sincronizando…');
 }
 function deleteItem(id){
   menu = menu.filter(i=>i.id!==id);
-  save('menu', menu);
+  saveMenuToCloud();
   renderItemsList();
   renderCats();
   renderMenu();
@@ -1175,6 +1216,7 @@ function showToast(text){
 
 setTipo('mesa');
 applyAppearance();
+initMenuSync();
 renderCats();
 renderMenu();
 renderOrder();
