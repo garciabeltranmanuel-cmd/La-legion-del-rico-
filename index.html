@@ -704,11 +704,9 @@
         <input type="text" id="numCocina">
         <label>WhatsApp — Dueño</label>
         <input type="text" id="numDueno">
-        <label>WhatsApp — Mesero</label>
-        <input type="text" id="numMesero">
         <label>Cambiar PIN de administrador</label>
         <input type="text" id="newPin" placeholder="Nuevo PIN">
-        <p class="hint">El botón "Enviar pedido" abre un chat de WhatsApp por cada número que dejes lleno aquí. Si dejas alguno vacío, simplemente no se le envía. En el celular hay que tocar "enviar" dentro de cada chat que se abre; si tu navegador pide permiso para abrir varias pestañas, acéptalo.</p>
+        <p class="hint">El botón "Enviar pedido" abre un chat de WhatsApp por cada número que dejes lleno aquí. Estos números ya vienen precargados por defecto para cualquiera que entre desde el QR, así que normalmente no hace falta tocar esto — solo si quieres cambiarlos.</p>
         <button class="btn btn-primary" onclick="saveNumbers()">Guardar cambios</button>
       </div>
 
@@ -750,7 +748,7 @@ const DEFAULT_MENU = [
   {id:'e1',cat:'Extras',name:'Orden de Tortillas',price:15},
   {id:'e2',cat:'Extras',name:'Guacamole',price:30},
 ];
-const DEFAULT_NUMBERS = {cocina:'', dueno:'', mesero:''};
+const DEFAULT_NUMBERS = {cocina:'524444923338', dueno:''};
 const DEFAULT_PIN = '1234';
 
 let menu = load('menu', DEFAULT_MENU);
@@ -942,7 +940,7 @@ function sendOrder(){
     showToast('Agrega al menos un platillo antes de enviar');
     return;
   }
-  const destinos = ['cocina','dueno','mesero'];
+  const destinos = ['cocina','dueno'];
   const activeNumbers = destinos.map(d => numbers[d]).filter(Boolean);
   if(activeNumbers.length === 0){
     showToast('Configura al menos un número en ⚙ Configuración');
@@ -1045,7 +1043,6 @@ function showPane(name){
 function populateAdmin(){
   document.getElementById('numCocina').value = numbers.cocina || '';
   document.getElementById('numDueno').value = numbers.dueno || '';
-  document.getElementById('numMesero').value = numbers.mesero || '';
   document.getElementById('newPin').value = '';
 
   const catSelect = document.getElementById('newItemCat');
@@ -1097,7 +1094,6 @@ function deleteItem(id){
 function saveNumbers(){
   numbers.cocina = document.getElementById('numCocina').value.trim();
   numbers.dueno = document.getElementById('numDueno').value.trim();
-  numbers.mesero = document.getElementById('numMesero').value.trim();
   save('numbers', numbers);
 
   const newPinVal = document.getElementById('newPin').value.trim();
