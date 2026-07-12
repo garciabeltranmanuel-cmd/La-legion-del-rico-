@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>La legion del Rico — Comandas</title>
+<title>Mi Taquería — Comandas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -649,10 +649,9 @@
   <div class="brand-row">
     <span id="logoEmoji" class="logo-emoji">🌮</span>
     <img id="logoImg" class="logo-img" alt="Logo">
-    <h1> El Rico Sabor </h1>
+    <h1>Mi Taquería</h1>
   </div>
   <p class="tag">Arma el pedido y mándalo directo a WhatsApp</p>
-   <p class="tag">Hecho: Delly Technologies</p>
   <button class="gear-btn" onclick="openAdmin()" title="Configuración" aria-label="Configuración">⚙</button>
 </header>
 
@@ -729,9 +728,8 @@
       <label>PIN de administrador</label>
       <input type="password" id="pinInput" placeholder="••••">
       <button class="btn btn-primary" onclick="checkPin()">Entrar</button>
-      <p class="hint">PIN por defecto: **** (cámbialo en la pestaña Números una vez dentro).</p>
-      <!-- Esta linea de abajo es para cuando se me olvida la contraseña y se resetea por celular -->
-     <!-- <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p> -->
+      <p class="hint">PIN por defecto: 1234 (cámbialo en la pestaña Números una vez dentro).</p>
+      <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p>
     </div>
 
     <div id="adminPanel" style="display:none;">
@@ -770,7 +768,7 @@
         <input type="text" id="numDueno">
         <label>Cambiar PIN de administrador</label>
         <input type="text" id="newPin" placeholder="Nuevo PIN">
-        <p class="hint">El botón "Enviar pedido" abre un chat de WhatsApp por cada número que dejes lleno aquí. Estos números ya vienen precargados por defecto para cualquiera que entre desde el QR, así que normalmente no hace falta tocar esto — solo si quieres cambiarlos.</p>
+        <p class="hint">El botón "Enviar pedido" abre un chat de WhatsApp por cada número que dejes lleno aquí. Estos números se sincronizan al instante en todos los celulares — no hace falta configurarlos en cada dispositivo.</p>
         <button class="btn btn-primary" onclick="saveNumbers()">Guardar cambios</button>
       </div>
 
@@ -811,6 +809,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const menuDocRef = db.collection('taqueria').doc('menu');
 const appearanceDocRef = db.collection('taqueria').doc('appearance');
+const numbersDocRef = db.collection('taqueria').doc('numbers');
 </script>
 <script>
 const DEFAULT_MENU = [
@@ -832,7 +831,7 @@ const DEFAULT_NUMBERS = {cocina:'524444923338', dueno:''};
 const DEFAULT_PIN = '1234';
 
 let menu = DEFAULT_MENU;
-let numbers = load('numbers', DEFAULT_NUMBERS);
+let numbers = DEFAULT_NUMBERS;
 let pin = load('pin', DEFAULT_PIN);
 let history = load('history', []);
 let logo = null;
@@ -884,6 +883,23 @@ function initAppearanceSync(){
     }
   }, function(err){
     showToast('No se pudo conectar a la apariencia compartida');
+  });
+}
+
+function initNumbersSync(){
+  numbersDocRef.onSnapshot(function(doc){
+    if(doc.exists){
+      numbers = doc.data();
+    } else {
+      numbers = DEFAULT_NUMBERS;
+      numbersDocRef.set(DEFAULT_NUMBERS);
+    }
+    if(document.getElementById('adminPanel').style.display === 'block'){
+      document.getElementById('numCocina').value = numbers.cocina || '';
+      document.getElementById('numDueno').value = numbers.dueno || '';
+    }
+  }, function(err){
+    showToast('No se pudo conectar a los números compartidos');
   });
 }
 
@@ -1253,16 +1269,17 @@ function deleteItem(id){
   renderMenu();
 }
 function saveNumbers(){
-  numbers.cocina = document.getElementById('numCocina').value.trim();
-  numbers.dueno = document.getElementById('numDueno').value.trim();
-  save('numbers', numbers);
+  const newCocina = document.getElementById('numCocina').value.trim();
+  const newDueno = document.getElementById('numDueno').value.trim();
+  numbers = {cocina: newCocina, dueno: newDueno};
+  numbersDocRef.set(numbers);
 
   const newPinVal = document.getElementById('newPin').value.trim();
   if(newPinVal){
     pin = newPinVal;
     save('pin', pin);
   }
-  showToast('Guardado correctamente');
+  showToast('Guardado, sincronizando con todos los celulares…');
 }
 
 let pendingNewItemImage = null;
@@ -1399,6 +1416,7 @@ setTipo('mesa');
 applyAppearance();
 initMenuSync();
 initAppearanceSync();
+initNumbersSync();
 renderCats();
 renderMenu();
 renderOrder();
