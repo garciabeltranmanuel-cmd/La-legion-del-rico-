@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title> La Legion del Rico — Comandas</title>
+<title>Mi Taquería — Comandas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -161,6 +161,34 @@
   }
   .bottom-nav{display:none;}
   .bottom-nav.show{display:flex;}
+
+  .lock-screen{
+    display:none;
+    position:fixed;
+    inset:0;
+    z-index:60;
+    background:var(--charcoal);
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+  }
+  .lock-screen.show{display:flex;}
+  .lock-card{
+    background:var(--paper);
+    border-radius:18px;
+    padding:34px 26px 28px;
+    max-width:380px;
+    width:100%;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.5);
+  }
+  .lock-card h2{
+    font-family:'Anton',sans-serif;
+    font-weight:400;
+    font-size:26px;
+    margin:0 0 10px;
+    color:var(--ink);
+  }
 
   nav.cats{
     display:flex;
@@ -649,10 +677,9 @@
   <div class="brand-row">
     <span id="logoEmoji" class="logo-emoji">🌮</span>
     <img id="logoImg" class="logo-img" alt="Logo">
-    <h1>El Rico Sabor</h1>
+    <h1>Mi Taquería</h1>
   </div>
   <p class="tag">Arma el pedido y mándalo directo a WhatsApp</p>
-  <p class="tag"> Hecho: Delly Technologies </p> 
   <button class="gear-btn" onclick="openAdmin()" title="Configuración" aria-label="Configuración">⚙</button>
 </header>
 
@@ -729,9 +756,8 @@
       <label>PIN de administrador</label>
       <input type="password" id="pinInput" placeholder="••••">
       <button class="btn btn-primary" onclick="checkPin()">Entrar</button>
-      <p class="hint">PIN por defecto: **** (cámbialo en la pestaña Números una vez dentro).</p>
-      <!-- Este es para poder cambiar la contraseña se quita el comnetario y se cambia en la aplicacion -->
-      <!-- <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p> -->
+      <p class="hint">PIN por defecto: 1234 (cámbialo en la pestaña Números una vez dentro).</p>
+      <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p>
     </div>
 
     <div id="adminPanel" style="display:none;">
@@ -739,6 +765,7 @@
         <button class="active" id="tabMenuBtn" onclick="showPane('menu')">Menú</button>
         <button id="tabNumBtn" onclick="showPane('numeros')">Números</button>
         <button id="tabApBtn" onclick="showPane('apariencia')">Apariencia</button>
+        <button id="tabSysBtn" onclick="showPane('sistema')">Sistema</button>
       </div>
 
       <div class="pane active" id="paneMenu">
@@ -789,7 +816,22 @@
 
         <button class="btn btn-primary" onclick="saveAppearance()">Guardar apariencia</button>
       </div>
+
+      <div class="pane" id="paneSistema">
+        <p class="hint" style="margin-top:0;">Bloquea el sistema para que nadie pueda hacer pedidos (por ejemplo, fuera de horario). Se aplica al instante en todos los celulares — tú siempre puedes volver a entrar aquí con tu PIN para desbloquearlo.</p>
+        <p style="font-weight:700;margin:14px 0 10px;" id="systemStatusText">Estado: cargando…</p>
+        <button class="btn btn-primary" id="lockToggleBtn" onclick="toggleSystemLock()" style="width:100%;">Cargando…</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card">
+    <p class="w-eyebrow">La Legión de Rico</p>
+    <h2>🔒 Cerrado por ahora</h2>
+    <p class="w-sub">No se están recibiendo pedidos en este momento. Vuelve a intentarlo más tarde.</p>
+    <button class="enter-btn" onclick="openAdmin()">Soy administrador</button>
   </div>
 </div>
 
@@ -812,6 +854,7 @@ const db = firebase.firestore();
 const menuDocRef = db.collection('taqueria').doc('menu');
 const appearanceDocRef = db.collection('taqueria').doc('appearance');
 const numbersDocRef = db.collection('taqueria').doc('numbers');
+const statusDocRef = db.collection('taqueria').doc('status');
 </script>
 <script>
 const DEFAULT_MENU = [
@@ -903,6 +946,39 @@ function initNumbersSync(){
   }, function(err){
     showToast('No se pudo conectar a los números compartidos');
   });
+}
+
+let systemLocked = false;
+
+function initLockSync(){
+  statusDocRef.onSnapshot(function(doc){
+    if(doc.exists){
+      systemLocked = !!doc.data().locked;
+    } else {
+      systemLocked = false;
+      statusDocRef.set({locked: false});
+    }
+    applyLockState();
+  }, function(err){
+    showToast('No se pudo conectar al estado del sistema');
+  });
+}
+
+function applyLockState(){
+  document.getElementById('lockScreen').classList.toggle('show', systemLocked);
+  const statusText = document.getElementById('systemStatusText');
+  const toggleBtn = document.getElementById('lockToggleBtn');
+  if(statusText && toggleBtn){
+    statusText.textContent = 'Estado: ' + (systemLocked ? '🔒 Bloqueado (nadie puede pedir)' : '🔓 Abierto (recibiendo pedidos)');
+    toggleBtn.textContent = systemLocked ? 'Desbloquear sistema' : 'Bloquear sistema';
+  }
+}
+
+function toggleSystemLock(){
+  systemLocked = !systemLocked;
+  statusDocRef.set({locked: systemLocked});
+  applyLockState();
+  showToast(systemLocked ? 'Sistema bloqueado' : 'Sistema desbloqueado');
 }
 
 function load(key, fallback){
@@ -1191,9 +1267,11 @@ function showPane(name){
   document.getElementById('paneMenu').classList.toggle('active', name==='menu');
   document.getElementById('paneNumeros').classList.toggle('active', name==='numeros');
   document.getElementById('paneApariencia').classList.toggle('active', name==='apariencia');
+  document.getElementById('paneSistema').classList.toggle('active', name==='sistema');
   document.getElementById('tabMenuBtn').classList.toggle('active', name==='menu');
   document.getElementById('tabNumBtn').classList.toggle('active', name==='numeros');
   document.getElementById('tabApBtn').classList.toggle('active', name==='apariencia');
+  document.getElementById('tabSysBtn').classList.toggle('active', name==='sistema');
 }
 function populateAdmin(){
   document.getElementById('numCocina').value = numbers.cocina || '';
@@ -1208,6 +1286,8 @@ function populateAdmin(){
   document.getElementById('headerColorInput').value = headerColor;
   pendingLogo = logo;
   refreshLogoPreview();
+
+  applyLockState();
 }
 function renderItemsList(){
   const list = document.getElementById('itemsList');
@@ -1419,6 +1499,7 @@ applyAppearance();
 initMenuSync();
 initAppearanceSync();
 initNumbersSync();
+initLockSync();
 renderCats();
 renderMenu();
 renderOrder();
