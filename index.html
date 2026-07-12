@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mi Taquería — Comandas</title>
+<title> El Rico Sabor — Comandas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -677,9 +677,10 @@
   <div class="brand-row">
     <span id="logoEmoji" class="logo-emoji">🌮</span>
     <img id="logoImg" class="logo-img" alt="Logo">
-    <h1>Mi Taquería</h1>
+    <h1>El Rico Sabor</h1>
   </div>
   <p class="tag">Arma el pedido y mándalo directo a WhatsApp</p>
+  <p class="tag"> Hecho: Dell Technologies </p>
   <button class="gear-btn" onclick="openAdmin()" title="Configuración" aria-label="Configuración">⚙</button>
 </header>
 
@@ -757,7 +758,8 @@
       <input type="password" id="pinInput" placeholder="••••">
       <button class="btn btn-primary" onclick="checkPin()">Entrar</button>
       <p class="hint">PIN por defecto: 1234 (cámbialo en la pestaña Números una vez dentro).</p>
-      <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p>
+      <!-- Esta linea es para cambiar de contraseña solo se activa en el momento -->
+     <!-- <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p> -->
     </div>
 
     <div id="adminPanel" style="display:none;">
@@ -831,7 +833,7 @@
     <p class="w-eyebrow">La Legión de Rico</p>
     <h2>🔒 Cerrado por ahora</h2>
     <p class="w-sub">No se están recibiendo pedidos en este momento. Vuelve a intentarlo más tarde.</p>
-    <button class="enter-btn" onclick="openAdmin()">Soy administrador</button>
+    <button class="enter-btn" onclick="openAdmin()">Soy administrador Dell Technologies </button>
   </div>
 </div>
 
