@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title> El Rico Sabor — Comandas</title>
+<title>Mi Taquería — Comandas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -188,6 +188,14 @@
     font-size:26px;
     margin:0 0 10px;
     color:var(--ink);
+  }
+  .hist-pin-card{
+    background:var(--paper);
+    border-radius:16px;
+    padding:26px 22px;
+    max-width:380px;
+    margin:30px auto 0;
+    text-align:center;
   }
 
   nav.cats{
@@ -677,10 +685,9 @@
   <div class="brand-row">
     <span id="logoEmoji" class="logo-emoji">🌮</span>
     <img id="logoImg" class="logo-img" alt="Logo">
-    <h1>El Rico Sabor</h1>
+    <h1>Mi Taquería</h1>
   </div>
   <p class="tag">Arma el pedido y mándalo directo a WhatsApp</p>
-  <p class="tag"> Hecho: Delly Technologies </p>
   <button class="gear-btn" onclick="openAdmin()" title="Configuración" aria-label="Configuración">⚙</button>
 </header>
 
@@ -709,7 +716,7 @@
         <button id="tipoMesaBtn" onclick="setTipo('mesa')">🍽️ Mesa</button>
         <button id="tipoLlevarBtn" onclick="setTipo('llevar')">🥡 Para llevar</button>
       </div>
-      <input type="text" id="refInput" placeholder="Número de mesa y mesero">
+      <input type="text" id="refInput" placeholder="Número de mesa">
 
       <div class="order-total-row">
         <span class="lbl">Total</span>
@@ -727,11 +734,20 @@
 
 <div class="view" id="viewHistory">
   <main>
-    <div class="history-head">
-      <h2>Historial</h2>
-      <button onclick="clearHistory()">Borrar todo</button>
+    <div id="historyPinGate" class="hist-pin-card">
+      <p class="w-eyebrow">Solo dueño / administrador</p>
+      <h2 style="font-family:'Anton',sans-serif;font-weight:400;font-size:22px;margin:0 0 10px;">🔒 Historial protegido</h2>
+      <label style="display:block;font-size:12px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-bottom:6px;">PIN de administrador o contraseña del dueño</label>
+      <input type="password" id="histPinInput" placeholder="••••" style="width:100%;padding:10px 11px;border-radius:8px;border:1px solid var(--paper-line);font-size:14px;margin-bottom:10px;">
+      <button class="enter-btn" onclick="checkHistoryPin()">Ver historial</button>
     </div>
-    <div id="historyList"></div>
+    <div id="historyContent" style="display:none;">
+      <div class="history-head">
+        <h2>Historial</h2>
+        <button onclick="clearHistory()">Borrar todo</button>
+      </div>
+      <div id="historyList"></div>
+    </div>
   </main>
 </div>
 
@@ -757,9 +773,8 @@
       <label>PIN de administrador</label>
       <input type="password" id="pinInput" placeholder="••••">
       <button class="btn btn-primary" onclick="checkPin()">Entrar</button>
-      <p class="hint">PIN por defecto: **** (cámbialo en la pestaña Números una vez dentro).</p>
-      <!-- Esta linea es para cambiar de contraseña solo se activa en el momento -->
-     <!-- <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p> -->
+      <p class="hint">PIN por defecto: 1234 (cámbialo en la pestaña Números una vez dentro). Este PIN es el mismo para todos los celulares.</p>
+      <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p>
     </div>
 
     <div id="adminPanel" style="display:none;">
@@ -797,9 +812,11 @@
         <input type="text" id="numCocina">
         <label>WhatsApp — Dueño</label>
         <input type="text" id="numDueno">
-        <label>Cambiar PIN de administrador</label>
+        <label>Cambiar PIN de administrador (acceso completo)</label>
         <input type="text" id="newPin" placeholder="Nuevo PIN">
-        <p class="hint">El botón "Enviar pedido" abre un chat de WhatsApp por cada número que dejes lleno aquí. Estos números se sincronizan al instante en todos los celulares — no hace falta configurarlos en cada dispositivo.</p>
+        <label>Contraseña del dueño (solo ve Historial)</label>
+        <input type="text" id="duenoPassInput" placeholder="Contraseña del dueño">
+        <p class="hint">El botón "Enviar pedido" abre un chat de WhatsApp por cada número que dejes lleno aquí. Estos números se sincronizan al instante en todos los celulares — no hace falta configurarlos en cada dispositivo. La contraseña del dueño solo permite ver el Historial; no da acceso a Menú, Números, Apariencia ni Sistema.</p>
         <button class="btn btn-primary" onclick="saveNumbers()">Guardar cambios</button>
       </div>
 
@@ -832,8 +849,8 @@
   <div class="lock-card">
     <p class="w-eyebrow">La Legión de Rico</p>
     <h2>🔒 Cerrado por ahora</h2>
-    <p class="w-sub">No se están recibiendo pedidos en este momento. Vuelve a intentarlo más tarde. Favor de hacer el Pago correspondiente! </p>
-    <button class="enter-btn" onclick="openAdmin()">Soy administrador Delly Technologies </button>
+    <p class="w-sub">No se están recibiendo pedidos en este momento. Vuelve a intentarlo más tarde.</p>
+    <button class="enter-btn" onclick="openAdmin()">Soy administrador</button>
   </div>
 </div>
 
@@ -857,6 +874,8 @@ const menuDocRef = db.collection('taqueria').doc('menu');
 const appearanceDocRef = db.collection('taqueria').doc('appearance');
 const numbersDocRef = db.collection('taqueria').doc('numbers');
 const statusDocRef = db.collection('taqueria').doc('status');
+const pinDocRef = db.collection('taqueria').doc('security');
+const historyColRef = db.collection('taqueria').doc('meta').collection('historial');
 </script>
 <script>
 const DEFAULT_MENU = [
@@ -879,8 +898,9 @@ const DEFAULT_PIN = '1234';
 
 let menu = DEFAULT_MENU;
 let numbers = DEFAULT_NUMBERS;
-let pin = load('pin', DEFAULT_PIN);
-let history = load('history', []);
+let pin = DEFAULT_PIN;
+let duenoPass = '';
+let history = [];
 let logo = null;
 let headerColor = '#1c1a17';
 let pendingLogo = logo;
@@ -976,6 +996,24 @@ function applyLockState(){
   }
 }
 
+function initPinSync(){
+  pinDocRef.onSnapshot(function(doc){
+    if(doc.exists && doc.data().pin){
+      pin = doc.data().pin;
+      duenoPass = doc.data().duenoPass || '';
+    } else {
+      pin = DEFAULT_PIN;
+      duenoPass = '';
+      pinDocRef.set({pin: DEFAULT_PIN, duenoPass: ''});
+    }
+    if(document.getElementById('adminPanel').style.display === 'block'){
+      document.getElementById('duenoPassInput').value = duenoPass;
+    }
+  }, function(err){
+    showToast('No se pudo conectar al PIN compartido');
+  });
+}
+
 function toggleSystemLock(){
   systemLocked = !systemLocked;
   statusDocRef.set({locked: systemLocked});
@@ -1001,8 +1039,30 @@ function switchView(name){
   document.getElementById('navMenuBtn').classList.toggle('active', name==='menu');
   document.getElementById('navOrderBtn').classList.toggle('active', name==='order');
   document.getElementById('navHistBtn').classList.toggle('active', name==='history');
-  if(name==='history') renderHistory();
+  if(name==='history'){
+    if(historyUnlocked){
+      renderHistory();
+    } else {
+      document.getElementById('historyPinGate').style.display = 'block';
+      document.getElementById('historyContent').style.display = 'none';
+      document.getElementById('histPinInput').value = '';
+    }
+  }
   window.scrollTo(0,0);
+}
+
+let historyUnlocked = false;
+
+function checkHistoryPin(){
+  const val = document.getElementById('histPinInput').value;
+  if(val === pin || (duenoPass && val === duenoPass)){
+    historyUnlocked = true;
+    document.getElementById('historyPinGate').style.display = 'none';
+    document.getElementById('historyContent').style.display = 'block';
+    renderHistory();
+  } else {
+    showToast('Contraseña incorrecta');
+  }
 }
 
 function enterApp(){
@@ -1186,8 +1246,7 @@ function finalizeOrder(){
     showToast('Agrega al menos un platillo antes de finalizar');
     return;
   }
-  history.unshift({
-    id: 'h'+Date.now(),
+  historyColRef.add({
     ts: Date.now(),
     tipo: data.tipo,
     ref: data.ref,
@@ -1195,10 +1254,23 @@ function finalizeOrder(){
     total: data.total,
     notes: data.notes
   });
-  save('history', history);
   clearOrder();
   showToast('Pedido guardado en historial');
   switchView('history');
+}
+
+function initHistorySync(){
+  historyColRef.orderBy('ts','desc').limit(300).onSnapshot(function(snapshot){
+    history = [];
+    snapshot.forEach(function(doc){
+      history.push(Object.assign({id: doc.id}, doc.data()));
+    });
+    if(historyUnlocked && document.getElementById('viewHistory').classList.contains('active')){
+      renderHistory();
+    }
+  }, function(err){
+    showToast('No se pudo conectar al historial compartido');
+  });
 }
 
 function renderHistory(){
@@ -1231,10 +1303,10 @@ function renderHistory(){
 function clearHistory(){
   if(history.length === 0) return;
   if(confirm('¿Borrar todo el historial de pedidos? Esta acción no se puede deshacer.')){
-    history = [];
-    save('history', history);
-    renderHistory();
-    showToast('Historial borrado');
+    const deletions = history.map(h => historyColRef.doc(h.id).delete());
+    Promise.all(deletions).then(function(){
+      showToast('Historial borrado');
+    });
   }
 }
 
@@ -1258,9 +1330,8 @@ function checkPin(){
   }
 }
 function resetPinPrompt(){
-  if(confirm('Esto restablece el PIN de administrador a 1234 solo en este celular. ¿Continuar?')){
-    pin = DEFAULT_PIN;
-    save('pin', pin);
+  if(confirm('Esto restablece el PIN de administrador a 1234 para TODOS los celulares (es un PIN compartido). ¿Continuar?')){
+    pinDocRef.set({pin: DEFAULT_PIN, duenoPass: duenoPass});
     document.getElementById('pinInput').value = '';
     showToast('PIN restablecido a 1234');
   }
@@ -1279,6 +1350,7 @@ function populateAdmin(){
   document.getElementById('numCocina').value = numbers.cocina || '';
   document.getElementById('numDueno').value = numbers.dueno || '';
   document.getElementById('newPin').value = '';
+  document.getElementById('duenoPassInput').value = duenoPass || '';
 
   const catSelect = document.getElementById('newItemCat');
   catSelect.innerHTML = categories().map(c=>`<option value="${c}">${c}</option>`).join('');
@@ -1359,10 +1431,11 @@ function saveNumbers(){
   numbersDocRef.set(numbers);
 
   const newPinVal = document.getElementById('newPin').value.trim();
-  if(newPinVal){
-    pin = newPinVal;
-    save('pin', pin);
-  }
+  const newDuenoPass = document.getElementById('duenoPassInput').value.trim();
+  pinDocRef.set({
+    pin: newPinVal || pin,
+    duenoPass: newDuenoPass
+  });
   showToast('Guardado, sincronizando con todos los celulares…');
 }
 
@@ -1502,6 +1575,8 @@ initMenuSync();
 initAppearanceSync();
 initNumbersSync();
 initLockSync();
+initPinSync();
+initHistorySync();
 renderCats();
 renderMenu();
 renderOrder();
