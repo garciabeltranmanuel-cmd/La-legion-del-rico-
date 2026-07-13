@@ -377,7 +377,7 @@
   .send-all-btn{
     display:block;
     width:100%;
-    margin-top:16px;
+    margin-top:0;
     padding:13px;
     border-radius:10px;
     border:none;
@@ -387,6 +387,11 @@
     font-weight:700;
     font-size:14.5px;
     cursor:pointer;
+  }
+  .send-all-btn:disabled{
+    background:var(--paper-line);
+    color:var(--muted);
+    cursor:not-allowed;
   }
   .finalize-btn{
     display:block;
@@ -401,6 +406,10 @@
     font-weight:700;
     font-size:13.5px;
     cursor:pointer;
+  }
+  .finalize-btn.confirmed{
+    background:var(--avocado);
+    cursor:default;
   }
   .clear-btn{
     display:block;
@@ -717,7 +726,7 @@
         <button id="tipoMesaBtn" onclick="setTipo('mesa')">🍽️ Mesa</button>
         <button id="tipoLlevarBtn" onclick="setTipo('llevar')">🥡 Para llevar</button>
       </div>
-      <input type="text" id="refInput" placeholder="Número de mesa y mesero">
+      <input type="text" id="refInput" placeholder="Número de mesa , mesero">
 
       <div class="order-total-row">
         <span class="lbl">Total</span>
@@ -726,8 +735,9 @@
       <div id="ticketLines"></div>
       <textarea id="notesInput" placeholder="Notas (ej. sin cebolla, extra salsa...)"></textarea>
 
-      <button class="send-all-btn" onclick="sendOrder()">📤 Enviar pedido</button>
-      <button class="finalize-btn" onclick="finalizeOrder()">✅ Finalizar y guardar en historial</button>
+      <button class="finalize-btn" id="finalizeBtn" onclick="finalizeOrder()">✅ Finalizar y guardar en historial</button>
+      <p class="hint" id="confirmHint" style="text-align:center;margin:8px 0 0;">Finaliza el pedido para poder enviarlo por WhatsApp.</p>
+      <button class="send-all-btn" id="sendBtn" onclick="sendOrder()" disabled>📤 Enviar pedido</button>
       <button class="clear-btn" onclick="clearOrder()">Vaciar pedido</button>
     </div>
   </main>
@@ -907,6 +917,7 @@ let logo = null;
 let headerColor = '#1c1a17';
 let pendingLogo = logo;
 let order = {};
+let orderConfirmed = false;
 let activeCat = null;
 let tipoPedido = 'mesa';
 
@@ -1139,6 +1150,7 @@ function changeQty(id, delta){
   const next = Math.max(0, current + delta);
   if(next === 0) delete order[id];
   else order[id] = next;
+  if(orderConfirmed){ orderConfirmed = false; updateConfirmUI(); }
   renderMenu();
   renderOrder();
 }
@@ -1184,6 +1196,7 @@ function renderOrder(){
 
 function removeLine(id){
   delete order[id];
+  if(orderConfirmed){ orderConfirmed = false; updateConfirmUI(); }
   renderMenu();
   renderOrder();
 }
@@ -1192,6 +1205,8 @@ function clearOrder(){
   order = {};
   document.getElementById('refInput').value = '';
   document.getElementById('notesInput').value = '';
+  orderConfirmed = false;
+  updateConfirmUI();
   renderMenu();
   renderOrder();
 }
@@ -1222,6 +1237,10 @@ function buildMessage(data){
 }
 
 function sendOrder(){
+  if(!orderConfirmed){
+    showToast('Primero finaliza el pedido con el botón verde');
+    return;
+  }
   const data = currentOrderData();
   if(!data){
     showToast('Agrega al menos un platillo antes de enviar');
@@ -1240,9 +1259,28 @@ function sendOrder(){
     window.open(url, '_blank');
   });
   showToast(activeNumbers.length > 1 ? 'Abriendo WhatsApp para cada destino…' : 'Abriendo WhatsApp…');
+  clearOrder();
+}
+
+function updateConfirmUI(){
+  const finalizeBtn = document.getElementById('finalizeBtn');
+  const sendBtn = document.getElementById('sendBtn');
+  const hint = document.getElementById('confirmHint');
+  if(orderConfirmed){
+    finalizeBtn.textContent = '✅ Pedido confirmado';
+    finalizeBtn.classList.add('confirmed');
+    sendBtn.disabled = false;
+    hint.textContent = 'Listo, ya puedes enviarlo por WhatsApp.';
+  } else {
+    finalizeBtn.textContent = '✅ Finalizar y guardar en historial';
+    finalizeBtn.classList.remove('confirmed');
+    sendBtn.disabled = true;
+    hint.textContent = 'Finaliza el pedido para poder enviarlo por WhatsApp.';
+  }
 }
 
 function finalizeOrder(){
+  if(orderConfirmed) return;
   const data = currentOrderData();
   if(!data){
     showToast('Agrega al menos un platillo antes de finalizar');
@@ -1256,9 +1294,9 @@ function finalizeOrder(){
     total: data.total,
     notes: data.notes
   });
-  clearOrder();
-  showToast('Pedido guardado en historial');
-  switchView('history');
+  orderConfirmed = true;
+  updateConfirmUI();
+  showToast('Pedido guardado en historial. Ya puedes enviarlo.');
 }
 
 function initHistorySync(){
@@ -1582,6 +1620,7 @@ initHistorySync();
 renderCats();
 renderMenu();
 renderOrder();
+updateConfirmUI();
 renderQR();
 </script>
 </body>
