@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Mi Taquería — Comandas</title>
+<title>La Legion del Rico — Comandas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -685,9 +685,10 @@
   <div class="brand-row">
     <span id="logoEmoji" class="logo-emoji">🌮</span>
     <img id="logoImg" class="logo-img" alt="Logo">
-    <h1>Mi Taquería</h1>
+    <h1> El Rico Sabor </h1>
   </div>
   <p class="tag">Arma el pedido y mándalo directo a WhatsApp</p>
+   <p class="tag"> Hecho: Delly Technologies </p>
   <button class="gear-btn" onclick="openAdmin()" title="Configuración" aria-label="Configuración">⚙</button>
 </header>
 
@@ -716,7 +717,7 @@
         <button id="tipoMesaBtn" onclick="setTipo('mesa')">🍽️ Mesa</button>
         <button id="tipoLlevarBtn" onclick="setTipo('llevar')">🥡 Para llevar</button>
       </div>
-      <input type="text" id="refInput" placeholder="Número de mesa">
+      <input type="text" id="refInput" placeholder="Número de mesa , mesero">
 
       <div class="order-total-row">
         <span class="lbl">Total</span>
@@ -773,8 +774,9 @@
       <label>PIN de administrador</label>
       <input type="password" id="pinInput" placeholder="••••">
       <button class="btn btn-primary" onclick="checkPin()">Entrar</button>
-      <p class="hint">PIN por defecto: 1234 (cámbialo en la pestaña Números una vez dentro). Este PIN es el mismo para todos los celulares.</p>
-      <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p>
+      <p class="hint">PIN por defecto: **** (cámbialo en la pestaña Números una vez dentro). Este PIN es el mismo para todos los celulares.</p>
+      <!-- Este linea se cambia la contraseña por otra la activamos cuando olvidamos contraseña -->
+     <!-- <p class="hint"><span style="text-decoration:underline;cursor:pointer;" onclick="resetPinPrompt()">¿Olvidaste tu PIN? Restablecer a 1234 en este celular</span></p> -->
     </div>
 
     <div id="adminPanel" style="display:none;">
